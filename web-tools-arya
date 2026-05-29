@@ -1,0 +1,1351 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Aryakk Premium Tools Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+:root {
+  --bg-dark: #090a0f;
+  --panel-dark: rgba(18, 20, 28, 0.65); /* Dibuat sedikit transparan agar video samar terlihat */
+  --panel-light: rgba(26, 29, 41, 0.75);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-main: #f3f4f6;
+  --text-muted: #878c9e;
+  --accent-cyan: #00f2fe;
+  --accent-blue: #4facfe;
+  --accent-green: #1db954;
+  --accent-indigo: #6366f1;
+  --gradient-primary: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+  --gradient-brat: linear-gradient(135deg, #bfff00 0%, #80cc00 100%);
+  --gradient-music: linear-gradient(135deg, #1db954 0%, #191414 100%);
+  --gradient-ai: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 24px 16px 80px;
+  overflow-x: hidden;
+}
+
+/* ==========================================================================
+   VIDEO BACKGROUND CORE COMPONENT
+   ========================================================================= */
+.video-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+  display: none; /* Disembunyikan saat login, tampil via JS saat masuk dashboard */
+}
+.video-background video {
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+}
+.video-background::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(9, 10, 15, 0.55); /* Tint warna gelap 55% agar teks kontras */
+}
+
+.animate-btn {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease, background-color 0.2s ease !important;
+}
+.btn-clicked {
+  transform: scale(0.92) !important;
+  opacity: 0.85 !important;
+}
+
+.app-container { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 20px; }
+
+.login-screen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 400px;
+  margin-top: 40px;
+}
+.login-card {
+  background: #12141c;
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+.main-dashboard-wrapper {
+  display: none;
+  width: 100%;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.app-header {
+  background: rgba(18, 20, 28, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 10px;
+  z-index: 900;
+}
+.header-brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.brand-icon { width: 36px; height: 36px; background: var(--gradient-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; }
+.brand-name { font-size: 16px; font-weight: 700; }
+
+.nav-trigger { 
+  width: 40px; height: 40px; background: var(--panel-light); border: 1px solid var(--border-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-main);
+}
+
+.nav-dropdown {
+  position: absolute; top: 70px; right: 16px; background: #12141c; border: 1px solid var(--border-color); border-radius: 16px; width: 200px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: none; flex-direction: column; overflow: hidden; z-index: 999;
+}
+.nav-dropdown.show { display: flex; }
+.dropdown-item { padding: 14px 16px; font-size: 14px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.dropdown-item:hover { background: var(--panel-light); color: var(--accent-cyan); }
+.menu-backdrop { position: fixed; inset: 0; z-index: 850; display: none; }
+.menu-backdrop.show { display: block; }
+
+.quick-tabs { display: flex; background: rgba(18, 20, 28, 0.5); padding: 4px; border-radius: 14px; border: 1px solid var(--border-color); gap: 4px; overflow-x: auto; }
+.quick-tabs::-webkit-scrollbar { display: none; }
+.q-tab { flex: 1; min-width: 75px; padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); border-radius: 10px; cursor: pointer; text-transform: uppercase; white-space: nowrap; }
+.q-tab.active { background: var(--panel-light); color: var(--accent-cyan); }
+
+.page-view { display: none; flex-direction: column; gap: 20px; }
+.page-view.active { display: flex; }
+
+.premium-card { 
+  background: var(--panel-dark); 
+  border: 1px solid var(--border-color); 
+  border-radius: 24px; 
+  padding: 24px; 
+  position: relative; 
+  overflow: hidden;
+  backdrop-filter: blur(10px); /* Efek Glassmorphism di atas video background */
+  -webkit-backdrop-filter: blur(10px);
+}
+.premium-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--gradient-primary); opacity: 0.7; }
+
+.profile-section { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 10px 0; }
+.avatar-wrapper { position: relative; width: 100px; height: 100px; margin-bottom: 14px; }
+.avatar-glow { position: absolute; inset: -4px; background: linear-gradient(135deg, var(--accent-cyan), #7f00ff); border-radius: 50%; z-index: 1; animation: spin 4s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.avatar-image { position: absolute; inset: 2px; background: #000; border-radius: 50%; z-index: 2; overflow: hidden; }
+.avatar-image img { width: 100%; height: 100%; object-fit: cover; }
+
+.action-grid { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-top: 20px; }
+.action-row-btn { background: var(--panel-light); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.action-row-btn:hover { border-color: var(--accent-cyan); }
+.btn-meta-left { display: flex; align-items: center; gap: 14px; }
+.btn-meta-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.btn-meta-text { display: flex; flex-direction: column; text-align: left; }
+.btn-main-title { font-size: 14px; font-weight: 700; color: var(--text-main); }
+.btn-sub-title { font-size: 11px; color: var(--text-muted); }
+
+.form-group { margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); }
+input[type="text"], input[type="password"], input[type="number"], textarea, select { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; color: var(--text-main); font-size: 14px; outline: none; transition: border-color 0.2s ease; }
+input:focus, textarea:focus, select:focus { border-color: var(--accent-cyan); }
+.row-split { display: flex; gap: 10px; }
+.row-split > * { flex: 1; }
+
+.chip-group { display: flex; gap: 8px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 12px; border: 1px solid var(--border-color); }
+.selector-chip { flex: 1; padding: 8px 12px; font-size: 13px; font-weight: 600; text-align: center; color: var(--text-muted); cursor: pointer; border-radius: 8px; }
+.selector-chip.active { background: var(--gradient-primary); color: #000; font-weight: 700; }
+
+.btn-block-primary { 
+  width: 100%; background: var(--gradient-primary); border: none; padding: 14px; border-radius: 14px; color: #000; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; outline: none; 
+}
+.btn-block-secondary { 
+  width: 100%; background: transparent; border: 1px solid var(--border-color); padding: 12px; border-radius: 14px; color: var(--text-main); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; 
+}
+
+/* Phone Mockup Layout */
+.phone-shell { width: 100%; background: #000000; border-radius: 0px; border: 6px solid #222530; position: relative; display: flex; flex-direction: column; overflow: visible; }
+.phone-inner-container { width: 100%; border-radius: 0px; overflow: hidden; position: relative; display: flex; flex-direction: column; background: #000000; }
+
+.ios-status-bar { background: #000000; height: 44px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 20px 8px; color: #ffffff; }
+.ios-time { font-size: 14px; font-weight: 600; }
+.ios-hardware-status { display: flex; align-items: center; gap: 6px; }
+.signal-bars { display: flex; gap: 2px; align-items: flex-end; }
+.signal-bars span { background: #ffffff; width: 3px; border-radius: 0.5px; }
+.battery-ios-ui { display: flex; align-items: center; gap: 4px; }
+.bat-body-shell { width: 22px; height: 11px; border: 1px solid rgba(255,255,255,0.5); border-radius: 3px; padding: 1px; display: flex; position: relative; }
+.bat-body-shell::after { content: ''; position: absolute; right: -3px; top: 3px; width: 2px; height: 3px; background: rgba(255,255,255,0.5); border-radius: 0 1px 1px 0; }
+.bat-core-fill { height: 100%; border-radius: 1.5px; }
+
+.ios-navigation-header { background: #16161a; border-bottom: 0.5px solid rgba(255, 255, 255, 0.12); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; }
+.ios-back-action { color: #0a84ff; font-size: 15px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.ios-avatar-center { display: flex; flex-direction: column; align-items: center; }
+.ios-contact-initial { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #8e8e93 0%, #636366 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+.ios-contact-title { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.6); }
+.ios-actions-right { display: flex; gap: 16px; color: #0a84ff; font-size: 16px; align-items: center; }
+
+.ios-chat-viewport { background: #000000; padding: 16px 12px; display: flex; flex-direction: column; gap: 8px; position: relative; min-height: 520px; }
+.timeline-stamp { text-align: center; font-size: 11px; font-weight: 600; color: #8e8e93; margin-bottom: 6px; }
+.msg-stream-row { display: flex; align-items: flex-end; gap: 8px; width: 100%; }
+.avatar-attachment-ui { width: 28px; height: 28px; border-radius: 50%; background: #3a3a3c; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #ffffff; }
+.bubble-bundle { display: flex; flex-direction: column; max-width: 75%; position: relative; }
+.bubble-msg-node { padding: 10px 14px; border-radius: 18px; font-size: 16px; line-height: 1.4; word-break: break-word; background: #262629; color: #ffffff; border-bottom-left-radius: 18px; position: relative; }
+.bubble-meta-timestamp { font-size: 10px; color: #8e8e93; margin-top: 3px; padding: 0 4px; }
+
+/* Context Menu UI - MATCHED TO THE REACTION PRESET IMAGE */
+.ios-blur-context-overlay { 
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); padding: 60px 16px 16px; display: none; flex-direction: column; align-items: flex-start; gap: 12px; 
+}
+.ios-blur-context-overlay.active { display: flex; }
+
+.reaction-pill-bar { 
+  background: #1c1c1e; border-radius: 30px; padding: 8px 18px; display: flex; width: auto; max-width: 100%; justify-content: space-between; font-size: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); gap: 14px; position: relative; margin-bottom: 5px;
+}
+/* Ekor kecil gelembung menu reaksi bulat iOS */
+.reaction-pill-bar::after {
+  content: ''; position: absolute; bottom: -6px; left: 24px; width: 12px; height: 12px; background: #1c1c1e; border-radius: 50%; box-shadow: -4px 5px 0 -1px #1c1c1e;
+}
+
+.context-focused-bubble-group { display: flex; flex-direction: column; align-items: flex-start; width: 100%; margin-bottom: 8px; }
+.context-isolated-bubble { 
+  background: #262629; color: #ffffff; padding: 10px 16px; border-radius: 18px; font-size: 16px; max-width: 75%; position: relative; line-height: 1.4;
+}
+/* Pembuatan ekor gelembung chat iMessage sisi kiri bawah */
+.context-isolated-bubble::before, .bubble-msg-node::before {
+  content: ""; position: absolute; bottom: 0; left: -5px; height: 20px; width: 10px; background: #262629; border-bottom-right-radius: 15px 12px;
+}
+.context-isolated-bubble::after, .bubble-msg-node::after {
+  content: ""; position: absolute; bottom: 0; left: -10px; height: 20px; width: 10px; background: #000000; border-bottom-right-radius: 10px;
+}
+
+.context-action-vertical-menu { background: #1c1c1e; border-radius: 14px; width: 100%; max-width: 230px; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
+.context-menu-node { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; font-size: 15px; font-weight: 400; color: #ffffff; border-bottom: 0.5px solid rgba(255,255,255,0.08); cursor: pointer; }
+.context-menu-node i { color: #ffffff; font-size: 15px; opacity: 0.8; }
+.context-menu-node.destructive { color: #ff453a; }
+.context-menu-node.destructive i { color: #ff453a; }
+
+.ios-system-input-bar { background: #16161a; border-top: 0.5px solid rgba(255, 255, 255, 0.12); padding: 8px 12px; display: flex; align-items: center; gap: 10px; }
+.ios-input-icon-add { width: 28px; height: 28px; background: #2c2c2e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; }
+.ios-input-placeholder-field { flex: 1; background: #000000; border: 1px solid #2c2c2e; border-radius: 15px; padding: 6px 14px; color: #8e8e93; font-size: 14px; }
+.ios-input-icon-send { width: 28px; height: 28px; background: #0a84ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 12px; }
+.ios-home-indicator-bar { background: #16161a; height: 20px; display: flex; align-items: center; justify-content: center; }
+.ios-home-pill { width: 110px; height: 5px; background: rgba(255,255,255,0.3); border-radius: 3px; }
+
+/* Brat Canvas Core */
+.brat-render-canvas { width: 100%; aspect-ratio: 1/1; background: #ffffff; border-radius: 20px; padding: 24px; display: flex; align-items: flex-start; justify-content: flex-start; overflow: hidden; }
+.brat-core-text { font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; font-weight: 500; color: #000000; text-align: left; line-height: 1.25; white-space: pre-wrap; word-break: break-word; width: 100%; letter-spacing: -1.5px; font-size: 34px; }
+
+.app-toast-notif { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(26, 29, 41, 0.95); border: 1px solid var(--border-color); color: #ffffff; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10000; display: flex; align-items: center; gap: 8px; }
+.app-toast-notif.active { transform: translateX(-50%) translateY(0); }
+
+/* Music Engine UI */
+.music-track-card { display: flex; flex-direction: column; gap: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 20px; border-radius: 20px; }
+.audio-native-element { width: 100%; margin-top: 6px; height: 40px; outline: none; }
+.available-songs-container { margin-top: 14px; padding: 12px 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 14px; }
+.available-songs-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--accent-cyan); margin-bottom: 8px; }
+.song-list-item { font-size: 13px; color: var(--text-main); padding: 4px 0; display: flex; align-items: center; gap: 8px; }
+.song-list-item i { font-size: 10px; color: var(--text-muted); }
+
+/* ==========================================================================
+   ARIYA AI ENGINE WINDOW STYLE
+   ========================================================================== */
+.ai-chat-container { display: flex; flex-direction: column; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 20px; height: 460px; overflow: hidden; }
+.ai-messages-window { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.ai-messages-window::-webkit-scrollbar { display: none; }
+.ai-msg-row { display: flex; align-items: flex-start; gap: 10px; max-width: 85%; }
+.ai-msg-row.user { margin-left: auto; flex-direction: row-reverse; }
+.ai-msg-avatar { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.08); }
+.ai-msg-avatar.user { background: #2a2d3d; color: #a1a1aa; }
+.ai-msg-avatar.bot { background: rgba(99,102,241,0.15); color: var(--accent-blue); }
+.ai-msg-bubble { padding: 10px 14px; border-radius: 16px; font-size: 13.5px; line-height: 1.5; color: #e4e4e7; border: 1px solid rgba(255,255,255,0.05); }
+.ai-msg-row.user .ai-msg-bubble { background: #12141c; border-top-right-radius: 0px; }
+.ai-msg-row.bot .ai-msg-bubble { background: rgba(26,29,41,0.6); border-top-left-radius: 0px; }
+.ai-input-bar-form { display: flex; gap: 8px; padding: 12px; background: #12141c; border-top: 1px solid var(--border-color); align-items: center; }
+.ai-input-field { flex: 1; background: #090a0f; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 14px; color: #fff; font-size: 13.5px; outline: none; }
+.ai-input-field:focus { border-color: var(--accent-indigo); }
+.ai-send-btn { width: 40px; height: 40px; background: var(--accent-indigo); border: none; border-radius: 12px; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.ai-send-btn:disabled { background: #1c1e2a; color: #4b4e69; cursor: not-allowed; }
+@keyframes blink { 50% { opacity: 0; } }
+.ai-cursor-blink { display: inline-block; width: 2px; height: 13px; background: var(--accent-blue); margin-left: 2px; animation: blink 1s infinite; }
+</style>
+</head>
+<body>
+
+<div class="video-background" id="bgVideoComponent">
+    <video loop playsinline id="nativeBgVideo">
+        <source src="https://files.catbox.moe/xc737p.mp4" type="video/mp4">
+    </video>
+</div>
+
+<div class="menu-backdrop" id="menuBackdrop" onclick="toggleDropdown()"></div>
+
+<div class="login-screen" id="screenLogin">
+  <div class="login-card">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div class="brand-icon" style="margin: 0 auto 12px; width: 48px; height: 48px; font-size: 20px;"><i class="fa-solid fa-lock"></i></div>
+      <h2 style="font-size: 20px; font-weight: 800;">Aryakk Suite Portal</h2>
+      <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Masukkan kredensial User</p>
+    </div>
+
+    <div class="form-group">
+      <label class="field-label">Username</label>
+      <input type="text" id="loginUsername" placeholder="Username Anda...">
+    </div>
+    <div class="form-group" style="margin-bottom: 20px;">
+      <label class="field-label">Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••">
+    </div>
+
+    <button class="btn-block-primary animate-btn" onclick="handleSystemAuth()"><i class="fa-solid fa-right-to-bracket"></i> Masuk Sekarang</button>
+  </div>
+</div>
+
+
+<div class="main-dashboard-wrapper" id="screenDashboard">
+  <div class="app-container">
+    
+    <header class="app-header">
+      <div class="header-brand animate-btn" onclick="navigateToPage('home')">
+        <div class="brand-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="brand-name">aryakk.club</div>
+      </div>
+      <div class="nav-trigger animate-btn" onclick="toggleDropdown()">
+        <i class="fa-solid fa-bars-staggered"></i>
+      </div>
+      <div class="nav-dropdown" id="navDropdown">
+        <div class="dropdown-item animate-btn" onclick="navigateToPage('home')"><i class="fa-solid fa-house"></i> Dashboard</div>
+        <div class="dropdown-item animate-btn" onclick="navigateToPage('download-hub')"><i class="fa-solid fa-cloud-arrow-down"></i> Downloader</div>
+        <div class="dropdown-item animate-btn" onclick="navigateToPage('imessage-engine')"><i class="fa-solid fa-comment-nodes"></i> iMessage Gen</div>
+        <div class="dropdown-item animate-btn" onclick="navigateToPage('brat-engine')"><i class="fa-solid fa-font"></i> Brat Generator</div>
+        <div class="dropdown-item animate-btn" onclick="navigateToPage('music-engine')"><i class="fa-solid fa-music"></i> Music Finder</div>
+        <div class="dropdown-item animate-btn" onclick="navigateToPage('arya-ai-view')" style="color:var(--accent-indigo);"><i class="fa-solid fa-robot"></i> Ariya AI</div>
+        <div class="dropdown-item animate-btn" onclick="navigateToPage('fake-tweet-view')" style="color:#1d9bf0;"><i class="fa-brands fa-twitter"></i> Fake Tweet</div>
+        <div class="dropdown-item animate-btn destructive" onclick="handleSystemLogout()" style="border-top: 1px solid rgba(255,255,255,0.05); color: #ff453a;"><i class="fa-solid fa-power-off"></i> Logout</div>
+      </div>
+    </header>
+
+    <div class="quick-tabs" id="quickTabsPanel" style="display:none;">
+      <div class="q-tab animate-btn" id="tab-home" onclick="navigateToPage('home')">Home</div>
+      <div class="q-tab animate-btn" id="tab-download" onclick="navigateToPage('download-hub')">Downloader</div>
+      <div class="q-tab animate-btn" id="tab-imsg" onclick="navigateToPage('imessage-engine')">iMessage</div>
+      <div class="q-tab animate-btn" id="tab-brat" onclick="navigateToPage('brat-engine')">Brat</div>
+      <div class="q-tab animate-btn" id="tab-music" onclick="navigateToPage('music-engine')">Music</div>
+      <div class="q-tab animate-btn" id="tab-ai" onclick="navigateToPage('arya-ai-view')">Ariya AI</div>
+      <div class="q-tab animate-btn" id="tab-tweet" onclick="navigateToPage('fake-tweet-view')">Tweet</div>
+    </div>
+
+    <div class="page-view active" id="view-home">
+      <div class="premium-card">
+        <div class="profile-section">
+          <div class="avatar-wrapper">
+            <div class="avatar-glow"></div>
+            <div class="avatar-image">
+              <img src="https://files.catbox.moe/53rmm9.jpg" alt="Avatar" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=arya'">
+            </div>
+          </div>
+          <h2 style="font-size: 22px; font-weight:800; margin-bottom:4px;" id="dashboardGreetingTitle">aryaak tools</h2>
+          <p style="font-size: 12px; color: var(--accent-blue); font-weight:700; letter-spacing:1px;" id="dashboardRoleBadge">PREMIUM MEMBER</p>
+          
+          <div class="action-grid">
+            <div class="action-row-btn animate-btn" onclick="navigateToPage('arya-ai-view')">
+              <div class="btn-meta-left">
+                <div class="btn-meta-icon" style="color:#a855f7; background:rgba(168,85,247,0.08);"><i class="fa-solid fa-robot"></i></div>
+                <div class="btn-meta-text">
+                  <span class="btn-main-title">Ariya AI Assistant</span>
+                  <span class="btn-sub-title">Asisten pintar super cerdas</span>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+            </div>
+
+            <div class="action-row-btn animate-btn" onclick="navigateToPage('download-hub')">
+              <div class="btn-meta-left">
+                <div class="btn-meta-icon" style="color:var(--accent-cyan); background:rgba(0,242,254,0.08);"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+                <div class="btn-meta-text">
+                  <span class="btn-main-title">All Platform Downloader</span>
+                  <span class="btn-sub-title">Download video TikTok, YT, IG, dll.</span>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+            </div>
+
+            <div class="action-row-btn animate-btn" onclick="navigateToPage('imessage-engine')">
+              <div class="btn-meta-left">
+                <div class="btn-meta-icon" style="color:var(--accent-blue); background:rgba(79,172,254,0.08);"><i class="fa-regular fa-comment-dots"></i></div>
+                <div class="btn-meta-text">
+                  <span class="btn-main-title">iMessage QC Preview</span>
+                  <span class="btn-sub-title">Mockup percakapan iOS lengkap</span>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+            </div>
+
+            <div class="action-row-btn animate-btn" onclick="navigateToPage('brat-engine')">
+              <div class="btn-meta-left">
+                <div class="btn-meta-icon" style="color:#bfff00; background:rgba(191,255,0,0.08);"><i class="fa-solid fa-font"></i></div>
+                <div class="btn-meta-text">
+                  <span class="btn-main-title">Brat Post Generator</span>
+                  <span class="btn-sub-title">Seni teks minimalis tren estetika</span>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+            </div>
+
+            <div class="action-row-btn animate-btn" onclick="navigateToPage('music-engine')">
+              <div class="btn-meta-left">
+                <div class="btn-meta-icon" style="color:var(--accent-green); background:rgba(29,185,84,0.08);"><i class="fa-solid fa-music"></i></div>
+                <div class="btn-meta-text">
+                  <span class="btn-main-title">Music Finder Hub</span>
+                  <span class="btn-sub-title">Cari & putar audio di latar belakang</span>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+            </div>
+
+            <div class="action-row-btn animate-btn" onclick="navigateToPage('fake-tweet-view')">
+              <div class="btn-meta-left">
+                <div class="btn-meta-icon" style="color:#1d9bf0; background:rgba(29,155,240,0.08);"><i class="fa-brands fa-twitter"></i></div>
+                <div class="btn-meta-text">
+                  <span class="btn-main-title">Fake Tweet Generator</span>
+                  <span class="btn-sub-title">Buat mockup twit X/Twitter estetis</span>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-view" id="view-download-hub">
+      <div class="premium-card">
+        <h3 style="font-size:18px; margin-bottom:4px;">All Platform Downloader</h3>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Ekstrak berkas audio video langsung dari link sosial.</p>
+        
+        <div class="form-group">
+          <label class="field-label">Tautan Konten / URL Link</label>
+          <input type="text" id="inputTargetUrl" placeholder="Tempel tautan video Tiktok / IG / YT / FB di sini...">
+        </div>
+        <button class="btn-block-primary animate-btn" style="margin-top:10px;" id="downloaderSubmitBtn" onclick="ambilDataVideo()"><i class="fa-solid fa-wand-magic-sparkles"></i> Ambil Data Video</button>
+        
+        <div id="downloadResultSection" style="margin-top: 20px; display: none; flex-direction: column; gap: 12px;"></div>
+      </div>
+    </div>
+
+    <div class="page-view" id="view-imessage-engine">
+      <div class="premium-card">
+        <h4 style="font-size:12px; color:var(--accent-cyan); margin-bottom:10px; text-transform:uppercase;">1. Pengaturan Status Bar</h4>
+        <div class="row-split">
+          <div class="form-group">
+            <label class="field-label">Nama Operator</label>
+            <input type="text" id="cfgOperator" value="Indosat Ooredoo">
+          </div>
+          <div class="form-group">
+            <label class="field-label">Jam Tampilan</label>
+            <input type="text" id="cfgTime" value="09:41">
+          </div>
+        </div>
+        <div class="row-split">
+          <div class="form-group">
+            <label class="field-label">Persentase Baterai</label>
+            <input type="number" id="cfgBattery" value="88" min="1" max="100">
+          </div>
+          <div class="form-group">
+            <label class="field-label">Bar Sinyal (1-4)</label>
+            <select id="cfgSignal">
+              <option value="4" selected>4 Bar (Penuh)</option>
+              <option value="3">3 Bar</option>
+              <option value="2">2 Bar</option>
+              <option value="1">1 Bar</option>
+            </select>
+          </div>
+        </div>
+
+        <h4 style="font-size:12px; color:var(--accent-cyan); margin-top:6px; margin-bottom:10px; text-transform:uppercase;">2. Konten Obrolan</h4>
+        <div class="row-split">
+          <div class="form-group">
+            <label class="field-label">Nama Kontak</label>
+            <input type="text" id="fieldContactName" value="Budisk">
+          </div>
+          <div class="form-group">
+            <label class="field-label">Kembali (Teks)</label>
+            <input type="text" id="fieldBackText" value="Pesan">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="field-label">Isi Pesan Utama</label>
+          <textarea id="fieldIncomingMsg" rows="2">Halo bro, apa kabar?</textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Mode Tampilan Mockup</label>
+          <div class="chip-group">
+            <div class="selector-chip animate-btn active" id="mode-node-ctx" onclick="changeMockupLayoutMode('ctx')">With Menu Context</div>
+            <div class="selector-chip animate-btn" id="mode-node-chat" onclick="changeMockupLayoutMode('chat')">Standard View</div>
+          </div>
+        </div>
+        <button class="btn-block-primary animate-btn" onclick="renderIMessageCanvasNode()"><i class="fa-solid fa-rotate"></i> Perbarui Tampilan</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="phone-shell" id="targetIosShell">
+          <div class="phone-inner-container">
+            <div class="ios-status-bar">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <div class="signal-bars" id="renderSignalBars"></div>
+                <span style="font-size:12px; font-weight:600;" id="renderOperator">Indosat Ooredoo</span>
+              </div>
+              <div class="ios-time" id="renderTime">09:41</div>
+              <div class="ios-hardware-status">
+                <i class="fa-solid fa-wifi" style="font-size:11px;"></i>
+                <div class="battery-ios-ui">
+                  <span class="bat-pct-text" id="renderBatteryPct">88%</span>
+                  <div class="bat-body-shell">
+                    <div class="bat-core-fill" id="renderBatteryCore" style="width: 88%; background: #30d158;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ios-navigation-header">
+              <div class="ios-back-action">
+                <i class="fa-solid fa-chevron-left"></i><span id="renderBackText">Pesan</span>
+              </div>
+              <div class="ios-avatar-center">
+                <div class="ios-contact-initial" id="lblContactInitial">B</div>
+                <div class="ios-contact-title" id="lblContactName">Budisk</div>
+              </div>
+              <div class="ios-actions-right">
+                <i class="fa-solid fa-video"></i>
+                <i class="fa-solid fa-circle-info"></i>
+              </div>
+            </div>
+
+            <div class="ios-chat-viewport" id="iosChatViewport">
+              <div class="timeline-stamp" id="renderBubbleTime">09:41</div>
+              <div id="dynamicBubbleGroup" style="display:flex; flex-direction:column; gap:10px; width:100%;"></div>
+
+              <div class="ios-blur-context-overlay" id="elementIosContextOverlay">
+                <div class="reaction-pill-bar">
+                  <span>👍</span><span>❤️</span><span>😂</span><span>😮</span><span>😢</span><span>🙏</span>
+                </div>
+                <div class="context-focused-bubble-group">
+                  <div class="context-isolated-bubble" id="lblContextBubbleNodeText">Halo bro, apa kabar?</div>
+                  <div class="bubble-meta-timestamp" id="renderContextTime" style="color:rgba(255,255,255,0.4); padding-left:4px;">09:41</div>
+                </div>
+                <div class="context-action-vertical-menu">
+                  <div class="context-menu-node animate-btn">Beri Bintang <i class="fa-regular fa-star"></i></div>
+                  <div class="context-menu-node animate-btn">Balas <i class="fa-solid fa-reply"></i></div>
+                  <div class="context-menu-node animate-btn">Teruskan <i class="fa-solid fa-share"></i></div>
+                  <div class="context-menu-node animate-btn">Salin <i class="fa-solid fa-copy"></i></div>
+                  <div class="context-menu-node animate-btn">Ucapkan <i class="fa-regular fa-comment-dots"></i></div>
+                  <div class="context-menu-node animate-btn">Laporkan <i class="fa-solid fa-triangle-exclamation"></i></div>
+                  <div class="context-menu-node animate-btn destructive">Hapus <i class="fa-solid fa-trash-can"></i></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ios-system-input-bar">
+              <div class="ios-input-icon-add"><i class="fa-solid fa-plus"></i></div>
+              <div class="ios-input-placeholder-field">iMessage</div>
+              <div class="ios-input-icon-send"><i class="fa-solid fa-arrow-up"></i></div>
+            </div>
+            <div class="ios-home-indicator-bar"><div class="ios-home-pill"></div></div>
+          </div>
+        </div>
+        <button class="btn-block-secondary animate-btn" style="background:var(--panel-light); border-color:var(--accent-blue);" onclick="alertGoblok()"><i class="fa-solid fa-camera"></i> ss kalo mau ambil</button>
+      </div>
+    </div>
+
+    <div class="page-view" id="view-brat-engine">
+      <div class="premium-card">
+        <h3 style="font-size:18px; margin-bottom:4px;">Brat Post Generator</h3>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Konversi kalimat menjadi gaya teks ikonik minimalis.</p>
+        
+        <div class="form-group">
+          <label class="field-label">Input Kalimat Teks</label>
+          <input type="text" id="inputBratString" value="kasih spasi random kaya gini" oninput="processBratRenderingEngine()">
+        </div>
+        
+        <div class="form-group" style="margin-top: 10px;">
+          <label class="field-label">Mode Tata Letak</label>
+          <div class="chip-group">
+            <div class="selector-chip animate-btn active" id="brat-mode-acak" onclick="changeBratLayoutMode('acak')">Acak</div>
+            <div class="selector-chip animate-btn" id="brat-mode-samping" onclick="changeBratLayoutMode('samping')">Samping</div>
+            <div class="selector-chip animate-btn" id="brat-mode-bawah" onclick="changeBratLayoutMode('bawah')">Kebawah</div>
+            <div class="selector-chip animate-btn" id="brat-mode-kunci" onclick="changeBratLayoutMode('kunci')"><i class="fa-solid fa-lock"></i> Kunci</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="brat-render-canvas" id="elementBratBox">
+          <div class="brat-core-text" id="lblBratTextNode">brat</div>
+        </div>
+        <button class="btn-block-secondary animate-btn" style="background:var(--panel-light); border-color:var(--accent-blue);" onclick="alertGoblok()"><i class="fa-solid fa-camera"></i> ss kalo mau ambil</button>
+      </div>
+    </div>
+
+    <div class="page-view" id="view-music-engine">
+      <div class="premium-card" style="border-radius:24px;">
+        <h3 style="font-size:18px; margin-bottom:4px;">Music Finder Hub</h3>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Cari dan putar lagu pilihan Anda langsung di latar belakang.</p>
+        
+        <div class="form-group">
+          <label class="field-label">Masukkan Judul Lagu</label>
+          <input type="text" id="inputMusicQuery" placeholder="Cari: favorite girl / payphone / alan walker...">
+        </div>
+        <button class="btn-block-primary animate-btn" style="background:var(--gradient-music); color:#fff;" id="btnMusicSearchSubmit" onclick="processMusicSearchQuery()"><i class="fa-solid fa-magnifying-glass"></i> Cari & Siapkan Audio</button>
+        
+        <div class="available-songs-container">
+          <div class="available-songs-title">Lagu yg tersedia:</div>
+          <div class="song-list-item"><i class="fa-solid fa-music"></i> 1. favorite girl</div>
+          <div class="song-list-item"><i class="fa-solid fa-music"></i> 2. one less lonely girl</div>
+          <div class="song-list-item"><i class="fa-solid fa-music"></i> 3. payphone</div>
+          <div class="song-list-item"><i class="fa-solid fa-music"></i> 4. wild flower</div>
+          <div class="song-list-item"><i class="fa-solid fa-music"></i> 5. alan walker</div>
+        </div>
+
+        <div id="musicSearchResultsPanel" style="margin-top: 20px; display: flex; flex-direction: column; gap: 14px;">
+          <p style="font-size:12px; color:var(--text-muted); text-align:center; padding:10px 0;">Belum ada riwayat pencarian. Coba cari lagu di atas.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-view" id="view-arya-ai-view">
+      <div class="premium-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <h3 style="font-size:18px;">AriyaAI Assistant</h3>
+          <button id="btnAiResetSession" onclick="resetAiChatSession()" style="background:transparent; border:none; color:var(--text-muted); font-size:12px; cursor:pointer;" class="animate-btn"><i class="fa-solid fa-trash-can"></i> Reset Chat</button>
+        </div>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">Asisten AI premium terintegrasi Gemini 2.5 Flash.</p>
+        
+        <div class="form-group" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius:14px; border:1px solid rgba(255,255,255,0.04); margin-bottom:14px;">
+          <label class="field-label" style="color:var(--accent-indigo);">Gemini API Key Configuration</label>
+          <div style="display:flex; gap:8px; margin-top:4px;">
+            <input type="password" id="inputAiApiKey" placeholder="Masukkan token AIzaSy..." style="padding:8px 12px; font-size:12px;">
+            <button onclick="saveAiKeyConfig()" style="background:var(--accent-indigo); color:#fff; font-size:12px; padding:0 14px; border:none; border-radius:12px; font-weight:700;" class="animate-btn">Simpan</button>
+          </div>
+        </div>
+
+        <div class="ai-chat-container">
+          <div class="ai-messages-window" id="aiMessagesWindow">
+            <div class="ai-msg-row bot">
+              <div class="ai-msg-avatar bot"><i class="fa-solid fa-robot"></i></div>
+              <div class="ai-msg-bubble">Halo! Saya AriyaAI. Ada yang bisa saya bantu hari ini, King?</div>
+            </div>
+          </div>
+          
+          <div class="ai-input-bar-form">
+            <input type="text" id="fieldAiPromptInput" class="ai-input-field" placeholder="Ketik pertanyaan ke AI...">
+            <button id="btnAiSendAction" class="ai-send-btn animate-btn" onclick="submitAiPromptRequest()"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-view" id="view-fake-tweet-view">
+      <div class="premium-card">
+        <h3 style="font-size:18px; margin-bottom:4px;">Fake Tweet Generator</h3>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Buat visual percakapan atau twit palsu ala X/Twitter.</p>
+        
+        <div class="row-split">
+          <div class="form-group">
+            <label class="field-label">Nama Pengguna</label>
+            <input type="text" id="tweetInputName" value="King Arya" oninput="updateTweetPreview()">
+          </div>
+          <div class="form-group">
+            <label class="field-label">Username (@)</label>
+            <input type="text" id="tweetInputUser" value="aryakk_club" oninput="updateTweetPreview()">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="field-label">Isi Twit / Tweet Content</label>
+          <textarea id="tweetInputContent" rows="3" oninput="updateTweetPreview()">Mikirin fitur baru buat website nyampe jam segini, emang agak lain gantengnya.</textarea>
+        </div>
+
+        <div class="row-split">
+          <div class="form-group">
+            <label class="field-label">Jam & Tanggal</label>
+            <input type="text" id="tweetInputDate" value="15.21 · 29 Mei 2026" oninput="updateTweetPreview()">
+          </div>
+          <div class="form-group">
+            <label class="field-label">Gadget / Source</label>
+            <input type="text" id="tweetInputSource" value="Twitter for iPhone" oninput="updateTweetPreview()">
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div id="targetTweetBox" style="background:#000000; border:1px solid var(--border-color); border-radius:20px; padding:20px; width:100%; font-family:-apple-system, BlinkMacSystemFont, Arial, sans-serif;">
+          <div style="display:flex; align-items:center; justify-content:between; width:100%; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="width:42px; height:42px; border-radius:50%; background:#1d9bf0; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700;" id="tweetPreviewInitial">K</div>
+              <div style="display:flex; flex-direction:column;">
+                <div style="display:flex; align-items:center; gap:4px;">
+                  <span id="tweetPreviewName" style="color:#ffffff; font-weight:700; font-size:15px;">King Arya</span>
+                  <i class="fa-solid fa-circle-check" style="color:#1d9bf0; font-size:14px;"></i>
+                </div>
+                <span id="tweetPreviewUser" style="color:#71767b; font-size:14px;">@aryakk_club</span>
+              </div>
+            </div>
+            <i class="fa-brands fa-twitter" style="color:#1d9bf0; font-size:18px; margin-left:auto; align-self:flex-start;"></i>
+          </div>
+
+          <div id="tweetPreviewContent" style="color:#e7e9ea; font-size:16px; line-height:1.5; white-space:pre-wrap; word-break:break-word; margin-bottom:14px;">Mikirin fitur baru buat website nyampe jam segini, emang agak lain gantengnya.</div>
+
+          <div style="color:#71767b; font-size:13px; padding-bottom:12px; border-bottom:1px solid #2f3336; margin-bottom:12px;">
+            <span id="tweetPreviewDate">15.21 · 29 Mei 2026</span> · <span id="tweetPreviewSource" style="color:#1d9bf0;">Twitter for iPhone</span>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; color:#71767b; font-size:14px; padding:0 4px;">
+            <span><i class="fa-regular fa-comment"></i> 12</span>
+            <span><i class="fa-regular fa-retweet"></i> 45</span>
+            <span><i class="fa-regular fa-heart" style="color:#f91880;"></i> <span style="color:#f91880;">894</span></span>
+            <span><i class="fa-regular fa-chart-column"></i> 4.2K</span>
+            <span><i class="fa-regular fa-bookmark"></i></span>
+          </div>
+        </div>
+        <button class="btn-block-secondary animate-btn" style="background:var(--panel-light); border-color:var(--accent-blue);" onclick="alertGoblok()"><i class="fa-solid fa-camera"></i> ss kalo mau ambil</button>
+      </div>
+    </div>
+
+    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
+      <button class="btn-block-secondary animate-btn" id="btnSupportToggle" onclick="toggleSupportSection()">
+        <i class="fa-solid fa-heart" style="color: #ff453a;"></i> Support Team
+      </button>
+      <div id="supportListSection" style="display: none; background: #12141c; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; flex-direction: column; gap: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <span style="color: var(--accent-cyan); font-weight: 800; font-size: 15px;">1.</span>
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-size: 14px; font-weight: 700; color: var(--text-main);">arya</span>
+            <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">dev</span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 10px;">
+          <span style="color: var(--accent-blue); font-weight: 800; font-size: 15px;">2.</span>
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-size: 14px; font-weight: 700; color: var(--text-main);">adit</span>
+            <span style="font-size: 11px; color: var(--accent-blue); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">best support</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="app-toast-notif" id="globalToastComponent">
+  <i class="fa-solid fa-circle-info" style="color:var(--accent-cyan);"></i>
+  <span id="toastMessageRef">Notification</span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+let globalMockupSelectedMode = 'ctx';
+let globalBratLayoutMode = 'acak';
+let currentGlobalAudioTrack = null; 
+
+// State Variable untuk AriyaAI
+let savedGeminiApiKey = localStorage.getItem('GEMINI_API_KEY') || "";
+let aiChatHistorySession = [];
+const systemPromptRule = "Anda adalah AriyaAI, asisten cerdas yang menjawab pertanyaan dalam bahasa Indonesia yang ramah, ringkas, dan jelas. PENTING: Jika pengguna bertanya tentang siapa yang membuat Anda, siapa pencipta Anda, atau hal sejenis, Anda harus wajib menjawab: 'Pencipta saya adalah king ariya ganteng'.";
+
+function alertGoblok() {
+  displayGlobalToastNotification('di ss tolol');
+}
+
+// Load Kunci API ke Input saat halaman siap
+document.addEventListener('DOMContentLoaded', () => {
+  if(savedGeminiApiKey) {
+    document.getElementById('inputAiApiKey').value = savedGeminiApiKey;
+  }
+  
+  // Deteksi tombol Enter di input AI
+  document.getElementById('fieldAiPromptInput').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') {
+      submitAiPromptRequest();
+    }
+  });
+});
+
+function saveAiKeyConfig() {
+  const inputVal = document.getElementById('inputAiApiKey').value.trim();
+  savedGeminiApiKey = inputVal;
+  localStorage.setItem('GEMINI_API_KEY', inputVal);
+  displayGlobalToastNotification('API Key berhasil disimpan!');
+}
+
+function resetAiChatSession() {
+  aiChatHistorySession = [];
+  const win = document.getElementById('aiMessagesWindow');
+  win.innerHTML = `
+    <div class="ai-msg-row bot">
+      <div class="ai-msg-avatar bot"><i class="fa-solid fa-robot"></i></div>
+      <div class="ai-msg-bubble">Sesi dibersihkan! Ada yang bisa saya bantu lagi, King?</div>
+    </div>
+  `;
+  displayGlobalToastNotification('Riwayat chat AI di-reset.');
+}
+
+// Action Kirim Prompt AriyaAI
+async function submitAiPromptRequest() {
+  const promptInput = document.getElementById('fieldAiPromptInput');
+  const sendBtn = document.getElementById('btnAiSendAction');
+  const msgWindow = document.getElementById('aiMessagesWindow');
+  const text = promptInput.value.trim();
+
+  if(!text) return;
+
+  if(!savedGeminiApiKey) {
+    displayGlobalToastNotification('Isi dan simpan Gemini API Key terlebih dahulu!');
+    return;
+  }
+
+  // Tampilkan pesan user ke UI box
+  appendAiMessageBubble('user', text);
+  promptInput.value = "";
+  sendBtn.disabled = true;
+
+  // Tampilkan bubble loading untuk AI
+  const loadingBubble = appendAiMessageBubble('bot', 'AriyaAI sedang berpikir...');
+  msgWindow.scrollTop = msgWindow.scrollHeight;
+
+  // Push riwayat chat
+  aiChatHistorySession.push({ role: "user", parts: [{ text: text }] });
+
+  const payload = {
+    contents: aiChatHistorySession,
+    systemInstruction: { parts: [{ text: systemPromptRule }] }
+  };
+
+  try {
+    const modelName = "gemini-2.5-flash";
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${savedGeminiApiKey}`;
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      let msg = errText;
+      try { const json = JSON.parse(errText); msg = json.error?.message || errText; } catch(e) {}
+      throw new Error(msg);
+    }
+
+    const data = await response.json();
+    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Gagal mendapatkan balasan.";
+
+    // Hapus teks loading, ganti dengan jawaban asli dari AI
+    loadingBubble.querySelector('.ai-msg-bubble').textContent = replyText;
+    aiChatHistorySession.push({ role: "model", parts: [{ text: replyText }] });
+
+  } catch (error) {
+    aiChatHistorySession.pop(); // batalkan history terakhir jika gagal
+    loadingBubble.querySelector('.ai-msg-bubble').innerHTML = `<span style="color:#ff453a; font-weight:700;">Error:</span> ${error.message}`;
+  } finally {
+    sendBtn.disabled = false;
+    msgWindow.scrollTop = msgWindow.scrollHeight;
+  }
+}
+
+function appendAiMessageBubble(sender, text) {
+  const windowContainer = document.getElementById('aiMessagesWindow');
+  const row = document.createElement('div');
+  row.className = `ai-msg-row ${sender}`;
+
+  const icon = sender === 'user' ? 'fa-user' : 'fa-robot';
+  row.innerHTML = `
+    <div class="ai-msg-avatar ${sender}"><i class="fa-solid ${icon}"></i></div>
+    <div class="ai-msg-bubble">${text}</div>
+  `;
+  windowContainer.appendChild(row);
+  return row;
+}
+
+// ==========================================================================
+// AUTHENTICATION & LOGIN ENGINE
+// ==========================================================================
+function handleSystemAuth() {
+  const usnInput = document.getElementById('loginUsername').value.trim();
+  const pwInput = document.getElementById('loginPassword').value.trim();
+
+  if(!usnInput || !pwInput) {
+    displayGlobalToastNotification('Harap isi semua kolom login!');
+    return;
+  }
+
+  if (usnInput === 'user' && pwInput === '1234') {
+    displayGlobalToastNotification('Login Berhasil! Halo User.');
+    launchDashboardView(usnInput);
+  } else {
+    displayGlobalToastNotification('Akses ditolak! Username atau Password salah.');
+  }
+}
+
+function launchDashboardView(username) {
+  document.getElementById('screenLogin').style.display = 'none';
+  document.getElementById('screenDashboard').style.display = 'flex';
+  
+  // MODIFIKASI: Menampilkan, mengaktifkan audio, dan memutar video background secara mulus
+  const bgVidContainer = document.getElementById('bgVideoComponent');
+  const nativeVid = document.getElementById('nativeBgVideo');
+  if(bgVidContainer && nativeVid) {
+    bgVidContainer.style.display = 'block';
+    nativeVid.muted = false; // Aktifkan suara video
+    nativeVid.volume = 0.5;  // Atur volume latar belakang ke 50% supaya seimbang
+    
+    // Gunakan interaksi user saat menekan login untuk membypass aturan browser autoplay
+    const playPromise = nativeVid.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(error => {
+            console.log("Playback diblokir browser, memerlukan interaksi manual.", error);
+        });
+    }
+  }
+
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
+
+  const roleBadge = document.getElementById('dashboardRoleBadge');
+  const greetingTitle = document.getElementById('dashboardGreetingTitle');
+
+  roleBadge.textContent = 'PREMIUM MEMBER';
+  roleBadge.style.color = 'var(--accent-blue)';
+  greetingTitle.textContent = `aryaak tools`;
+  
+  initClickAnimationEngine(); 
+}
+
+function handleSystemLogout() {
+  if(currentGlobalAudioTrack) {
+    currentGlobalAudioTrack.pause();
+  }
+
+  // MODIFIKASI: Sembunyikan dan bisukan kembali video background saat logout
+  const bgVidContainer = document.getElementById('bgVideoComponent');
+  const nativeVid = document.getElementById('nativeBgVideo');
+  if(bgVidContainer && nativeVid) {
+    bgVidContainer.style.display = 'none';
+    nativeVid.pause();
+    nativeVid.muted = true;
+  }
+
+  document.getElementById('screenDashboard').style.display = 'none';
+  document.getElementById('screenLogin').style.display = 'flex';
+  navigateToPage('home');
+  displayGlobalToastNotification('Berhasil keluar dari sistem.');
+}
+
+// ==========================================================================
+// CORE CLICK INTERACTION ENGINE
+// ==========================================================================
+function initClickAnimationEngine() {
+  const targetButtons = document.querySelectorAll('.animate-btn');
+  targetButtons.forEach(btn => {
+    const pressAction = () => { btn.classList.add('btn-clicked'); };
+    const releaseAction = () => { setTimeout(() => { btn.classList.remove('btn-clicked'); }, 80); };
+
+    btn.removeEventListener('touchstart', pressAction);
+    btn.removeEventListener('touchend', releaseAction);
+    btn.removeEventListener('mousedown', pressAction);
+    btn.removeEventListener('mouseup', releaseAction);
+
+    btn.addEventListener('touchstart', pressAction, { passive: true });
+    btn.addEventListener('touchend', releaseAction, { passive: true });
+    btn.addEventListener('touchcancel', releaseAction, { passive: true });
+    btn.addEventListener('mousedown', pressAction);
+    btn.addEventListener('mouseup', releaseAction);
+    btn.addEventListener('mouseleave', releaseAction);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initClickAnimationEngine();
+});
+
+function toggleDropdown() {
+  document.getElementById('navDropdown').classList.toggle('show');
+  document.getElementById('menuBackdrop').classList.toggle('show');
+}
+
+function navigateToPage(targetPageId) {
+  document.getElementById('navDropdown').classList.remove('show');
+  document.getElementById('menuBackdrop').classList.remove('show');
+  
+  const sections = ['home', 'download-hub', 'imessage-engine', 'brat-engine', 'music-engine', 'arya-ai-view', 'fake-tweet-view'];
+  sections.forEach(sid => {
+    const el = document.getElementById(`view-${sid}`);
+    if (el) el.classList.toggle('active', sid === targetPageId);
+    const tabNode = document.getElementById(`tab-${sid}`);
+    if (tabNode) tabNode.classList.toggle('active', sid === targetPageId);
+  });
+
+  document.getElementById('quickTabsPanel').style.display = (targetPageId === 'home') ? 'none' : 'flex';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function displayGlobalToastNotification(message) {
+  const toastNode = document.getElementById('globalToastComponent');
+  document.getElementById('toastMessageRef').textContent = message;
+  toastNode.classList.add('active');
+  setTimeout(() => { toastNode.classList.remove('active'); }, 2500);
+}
+
+function toggleSupportSection() {
+  const supportDiv = document.getElementById('supportListSection');
+  const toggleBtn = document.getElementById('btnSupportToggle');
+  if (supportDiv.style.display === 'none' || supportDiv.style.display === '') {
+    supportDiv.style.display = 'flex';
+    toggleBtn.style.borderColor = 'var(--accent-cyan)';
+  } else {
+    supportDiv.style.display = 'none';
+    toggleBtn.style.borderColor = 'var(--border-color)';
+  }
+}
+
+// Downloader Functionality
+async function ambilDataVideo() {
+  const urlField = document.getElementById('inputTargetUrl').value.trim();
+  const resultDiv = document.getElementById('downloadResultSection');
+  const btn = document.getElementById('downloaderSubmitBtn');
+
+  if (!urlField) {
+    displayGlobalToastNotification('Harap masukkan tautan url valid!');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Menghubungkan Server...`;
+  resultDiv.style.display = 'none';
+  resultDiv.innerHTML = '';
+
+  let videoUrlOutput = "";
+  let videoTitleOutput = "Media Download Berhasil Diparsing";
+
+  try {
+    if (urlField.includes('tiktok.com')) {
+      const response = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(urlField)}`);
+      const payload = await response.json();
+      if (payload && payload.data) {
+        videoUrlOutput = payload.data.play || payload.data.wmplay;
+        videoTitleOutput = payload.data.title || "Video TikTok Tanpa Watermark";
+      }
+    } else {
+      const response = await fetch(`https://api.savetube.me/download?url=${encodeURIComponent(urlField)}`);
+      const payload = await response.json();
+      if (payload && payload.result) {
+        videoUrlOutput = payload.result.url || payload.result.video;
+        videoTitleOutput = payload.result.title || "Video Hasil Ekstraksi Medsos";
+      }
+    }
+
+    if (videoUrlOutput) {
+      resultDiv.innerHTML = `
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 14px; border-radius:12px; width:100%;">
+          <p style="font-size:13px; font-weight:700; color:var(--accent-cyan); margin-bottom:4px;"><i class="fa-solid fa-circle-check"></i> Konten Siap Didownload</p>
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${videoTitleOutput}</p>
+          <a href="${videoUrlOutput}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+            <button class="btn-block-primary animate-btn" style="background:var(--gradient-primary);"><i class="fa-solid fa-circle-arrow-down"></i> Unduh File Video (.MP4)</button>
+          </a>
+        </div>
+      `;
+      resultDiv.style.display = 'flex';
+      initClickAnimationEngine();
+      displayGlobalToastNotification('Sukses! Klik tombol biru untuk mengunduh.');
+    } else {
+      throw new Error();
+    }
+  } catch (error) {
+    resultDiv.innerHTML = `
+      <div style="background: rgba(255,69,58,0.05); border: 1px solid rgba(255,69,58,0.2); padding: 14px; border-radius:12px; width:100%;">
+        <p style="font-size:13px; font-weight:700; color:#ff453a; margin-bottom:4px;"><i class="fa-solid fa-triangle-exclamation"></i> Proteksi Pembatasan Server API</p>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Gunakan alternatif bypass instan dengan menekan tombol manual di bawah:</p>
+        <a href="https://snaptik.app/" target="_blank" style="text-decoration:none; margin-bottom:6px; display:block;">
+          <button class="btn-block-secondary animate-btn" style="font-size:12px; padding:10px;"><i class="fa-solid fa-arrow-up-right-from-square"></i> Alternatif 1: SnapTik Web</button>
+        </a>
+        <a href="https://savefrom.net/" target="_blank" style="text-decoration:none; display:block;">
+          <button class="btn-block-secondary animate-btn" style="font-size:12px; padding:10px;"><i class="fa-solid fa-arrow-up-right-from-square"></i> Alternatif 2: SaveFrom Web</button>
+        </a>
+      </div>
+    `;
+    resultDiv.style.display = 'flex';
+    initClickAnimationEngine();
+    displayGlobalToastNotification('API Limit! Gunakan opsi alternatif bypass.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Ambil Data Video`;
+  }
+}
+
+// iMessage Mockup Functionality
+function changeMockupLayoutMode(selectedModeToken) {
+  globalMockupSelectedMode = selectedModeToken;
+  document.getElementById('mode-node-ctx').className = 'selector-chip animate-btn' + (selectedModeToken === 'ctx' ? ' active' : '');
+  document.getElementById('mode-node-chat').className = 'selector-chip animate-btn' + (selectedModeToken === 'chat' ? ' active' : '');
+  renderIMessageCanvasNode();
+}
+
+// Menyesuaikan agar lagu background melambat/dikecilkan sedikit volumenya saat musik eksternal dimuat
+function processMusicSearchQuery() {
+  const query = document.getElementById('inputMusicQuery').value.trim();
+  const searchPanel = document.getElementById('musicSearchResultsPanel');
+  const searchBtn = document.getElementById('btnMusicSearchSubmit');
+
+  if(!query) {
+    displayGlobalToastNotification('Masukkan judul lagu!');
+    return;
+  }
+
+  searchBtn.disabled = true;
+  searchBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Memproses Audio...`;
+  searchPanel.innerHTML = '';
+
+  let audioStreamUrl = "";
+  let trackTitleName = "";
+
+  const databaseLokal = [
+    { id: "https://files.catbox.moe/varjgp.mp3", title: "Favorite Girl - Justin Bieber", keywords: ["favorite girl", "favorite", "justin bieber", "bieber"] },
+    { id: "https://files.catbox.moe/lh7y1y.mp3", title: "One Less Lonely Girl - Justin Bieber", keywords: ["one less lonely girl", "lonely girl", "lonely"] },
+    { id: "https://files.catbox.moe/cmmcrf.mp3", title: "Payphone - Maroon 5", keywords: ["payphone", "maroon 5", "maroon"] },
+    { id: "https://files.catbox.moe/wyxsvt.mp3", title: "Wild Flower - RM, Youjeen", keywords: ["wild flower", "wildflower", "flower"] },
+    { id: "https://files.catbox.moe/771cpa.mp3", title: "Alan Walker Special Track", keywords: ["alan walker", "alan", "walker"] }
+  ];
+
+  const targetQueryLower = query.toLowerCase();
+  const match = databaseLokal.find(t => t.keywords.some(k => targetQueryLower.includes(k)));
+
+  if(match) {
+    audioStreamUrl = match.id;
+    trackTitleName = match.title;
+  } else {
+    // API Deezer fallback
+    audioStreamUrl = "";
+  }
+
+  if (audioStreamUrl) {
+    if(currentGlobalAudioTrack) {
+      currentGlobalAudioTrack.pause();
+    }
+    
+    // Kecilkan musik background video agar tidak tabrakan
+    const nativeVid = document.getElementById('nativeBgVideo');
+    if(nativeVid) nativeVid.volume = 0.1;
+
+    searchPanel.innerHTML = `
+      <div class="music-track-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+          <div style="display:flex; flex-direction:column; min-width:0; flex:1;">
+            <span style="font-size:14px; font-weight:700; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${trackTitleName}</span>
+            <span style="font-size:11px; color:var(--accent-green); font-weight:600;"><i class="fa-solid fa-circle-check"></i> Audio Kustom Berhasil Dimuat</span>
+          </div>
+        </div>
+        <audio id="html5NativeAudioComponent" class="audio-native-element" controls>
+          <source src="${audioStreamUrl}" type="audio/mpeg">
+        </audio>
+      </div>
+    `;
+
+    currentGlobalAudioTrack = document.getElementById('html5NativeAudioComponent');
+    currentGlobalAudioTrack.play().catch(() => {});
+    displayGlobalToastNotification('Sukses memuat musik!');
+  } else {
+    searchPanel.innerHTML = `<p style="text-align:center; font-size:12px; color:#ff453a;">Lagu tidak ditemukan.</p>`;
+  }
+
+  searchBtn.disabled = false;
+  searchBtn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Cari & Siapkan Audio`;
+}
+
+function renderIMessageCanvasNode() {
+  const opName = document.getElementById('cfgOperator').value || 'Operator';
+  const iosTime = document.getElementById('cfgTime').value || '09:41';
+  const batPct = document.getElementById('cfgBattery').value || '100';
+  const sigBars = parseInt(document.getElementById('cfgSignal').value);
+
+  document.getElementById('renderOperator').textContent = opName;
+  document.getElementById('renderTime').textContent = iosTime;
+  document.getElementById('renderBubbleTime').textContent = iosTime;
+  document.getElementById('renderContextTime').textContent = iosTime;
+  document.getElementById('renderBatteryPct').textContent = batPct + '%';
+  document.getElementById('renderBatteryCore').style.width = batPct + '%';
+  document.getElementById('renderBatteryCore').style.background = (parseInt(batPct) <= 20) ? '#ff453a' : '#30d158';
+
+  const sigContainer = document.getElementById('renderSignalBars');
+  sigContainer.innerHTML = '';
+  const heights = [4, 6, 9, 12];
+  for(let i=0; i<4; i++) {
+    const bar = document.createElement('span');
+    bar.style.width = '3px';
+    bar.style.borderRadius = '0.5px';
+    bar.style.height = heights[i] + 'px';
+    bar.style.background = (i < sigBars) ? '#ffffff' : 'rgba(255,255,255,0.3)';
+    sigContainer.appendChild(bar);
+  }
+
+  const inputContactName = document.getElementById('fieldContactName').value.trim() || 'User';
+  const backText = document.getElementById('fieldBackText').value.trim() || 'Pesan';
+  const inputIncomingMsg = document.getElementById('fieldIncomingMsg').value.trim() || '';
+
+  document.getElementById('lblContactInitial').textContent = inputContactName[0].toUpperCase();
+  document.getElementById('lblContactName').textContent = inputContactName;
+  document.getElementById('renderBackText').textContent = backText;
+
+  const dynamicGroupContainer = document.getElementById('dynamicBubbleGroup');
+  dynamicGroupContainer.innerHTML = '';
+
+  if (inputIncomingMsg) {
+    const baseRowElement = document.createElement('div');
+    baseRowElement.className = `msg-stream-row incoming`;
+
+    const avatarElement = document.createElement('div');
+    avatarElement.className = 'avatar-attachment-ui';
+    avatarElement.textContent = inputContactName[0].toUpperCase();
+    baseRowElement.appendChild(avatarElement);
+
+    const bundleWrapper = document.createElement('div');
+    bundleWrapper.className = `bubble-bundle`;
+
+    const bubbleNode = document.createElement('div');
+    bubbleNode.className = `bubble-msg-node`;
+    bubbleNode.textContent = inputIncomingMsg;
+
+    const timeNode = document.createElement('div');
+    timeNode.className = 'bubble-meta-timestamp';
+    timeNode.textContent = iosTime;
+
+    bundleWrapper.appendChild(bubbleNode);
+    bundleWrapper.appendChild(timeNode);
+    baseRowElement.appendChild(bundleWrapper);
+    dynamicGroupContainer.appendChild(baseRowElement);
+  }
+
+  const contextOverlayElement = document.getElementById('elementIosContextOverlay');
+  if (globalMockupSelectedMode === 'ctx') {
+    document.getElementById('lblContextBubbleNodeText').textContent = inputIncomingMsg;
+    contextOverlayElement.classList.add('active');
+  } else {
+    contextOverlayElement.classList.remove('active');
+  }
+}
+
+// Brat Functionality
+function changeBratLayoutMode(mode) {
+  globalBratLayoutMode = mode;
+  document.getElementById('brat-mode-acak').className = 'selector-chip animate-btn' + (mode === 'acak' ? ' active' : '');
+  document.getElementById('brat-mode-samping').className = 'selector-chip animate-btn' + (mode === 'samping' ? ' active' : '');
+  document.getElementById('brat-mode-bawah').className = 'selector-chip animate-btn' + (mode === 'bawah' ? ' active' : '');
+  document.getElementById('brat-mode-kunci').className = 'selector-chip animate-btn' + (mode === 'kunci' ? ' active' : '');
+  processBratRenderingEngine();
+}
+
+function processBratRenderingEngine() {
+  const rawInputTextString = document.getElementById('inputBratString').value;
+  const displayElement = document.getElementById('lblBratTextNode');
+  
+  if (!rawInputTextString.trim()) {
+    displayElement.textContent = rawInputTextString;
+    return;
+  }
+  
+  const length = rawInputTextString.length;
+  if (length > 60) displayElement.style.fontSize = '22px';
+  else if (length > 40) displayElement.style.fontSize = '26px';
+  else if (length > 20) displayElement.style.fontSize = '30px';
+  else displayElement.style.fontSize = '36px';
+
+  const words = rawInputTextString.trim().split(/\s+/);
+  let formattedText = words[0];
+
+  for (let i = 1; i < words.length; i++) {
+    if (globalBratLayoutMode === 'bawah') {
+      formattedText += "\n" + words[i];
+    } else if (globalBratLayoutMode === 'samping' || globalBratLayoutMode === 'kunci') {
+      formattedText += " " + words[i];
+    } else {
+      let seedValue = 0;
+      for (let j = 0; j < words[i].length; j++) {
+        seedValue += words[i].charCodeAt(j) * (j + 1);
+      }
+      seedValue += i * 7; 
+      const moduloFactor = seedValue % 12;
+      if (moduloFactor < 3) {
+        formattedText += "\n" + words[i];
+      } else if (moduloFactor < 8) {
+        const spaceCount = (seedValue % 6) + 3; 
+        formattedText += "\n" + " ".repeat(spaceCount) + words[i];
+      } else {
+        const wideSpaceCount = (seedValue % 5) + 4;
+        formattedText += " ".repeat(wideSpaceCount) + words[i];
+      }
+    }
+  }
+  displayElement.textContent = formattedText;
+}
+
+// Fake Tweet Functionality
+function updateTweetPreview() {
+  const name = document.getElementById('tweetInputName').value.trim() || 'User';
+  const user = document.getElementById('tweetInputUser').value.trim() || 'username';
+  const content = document.getElementById('tweetInputContent').value || '';
+  const date = document.getElementById('tweetInputDate').value || '';
+  const source = document.getElementById('tweetInputSource').value || 'Web App';
+
+  document.getElementById('tweetPreviewName').textContent = name;
+  document.getElementById('tweetPreviewInitial').textContent = name[0].toUpperCase();
+  document.getElementById('tweetPreviewUser').textContent = '@' + user.replace('@', '');
+  document.getElementById('tweetPreviewContent').textContent = content;
+  document.getElementById('tweetPreviewDate').textContent = date;
+  document.getElementById('tweetPreviewSource').textContent = source;
+}
+
+renderIMessageCanvasNode();
+processBratRenderingEngine();
+
+// Inisialisasi teks tweet awal setelah halaman siap
+document.addEventListener('DOMContentLoaded', () => {
+  if(document.getElementById('tweetInputName')) {
+    updateTweetPreview();
+  }
+});
+</script>
+</body>
+</html>
